@@ -46,7 +46,14 @@ class Convertor(object):
         self.ipv6_blocks = list()
 
     def download(self):
-        args = 'curl', '--silent', '--location', '--output', self.zipfile, '--time-cond', self.zipfile, '--remote-time', self.args.src
+        # Формуємо команду для завантаження файлу з використанням облікових даних
+        args = (
+            'curl', '--silent', '--location', '--output', self.zipfile, 
+            '--time-cond', self.zipfile, '--remote-time', self.args.src
+        )
+        if self.args.account_id and self.args.license_key:
+            args += ('--user', f'{self.args.account_id}:{self.args.license_key}',)
+
         process = Process(*args)
         if process.failed():
             process.print_info("fatal error")
@@ -169,6 +176,8 @@ def main():
     parser.add_argument("--exclude-continent", required=False, action="store_true", dest="exclude_continent_code", help="exclude continent code if country code is unknown")
     parser.add_argument("--exclude-ipv6", required=False, action="store_true", dest="exclude_ipv6", help="exclude IPv6 networks")
     parser.add_argument("--reload-nginx", required=False, action="store_true", dest="reload_nginx", help="reload nginx")
+    parser.add_argument("--account-id", required=False, metavar="ACCOUNT_ID", dest="account_id", help="MaxMind account ID for downloading GeoLite2 database")
+    parser.add_argument("--license-key", required=False, metavar="LICENSE_KEY", dest="license_key", help="MaxMind license key for downloading GeoLite2 database")
     args = parser.parse_args()
     if not (args.download or args.convert or args.reload_nginx):
         parser.print_help()
